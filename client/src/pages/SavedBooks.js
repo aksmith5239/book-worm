@@ -15,38 +15,31 @@ import { REMOVE_BOOK } from "../utils/mutations";
 import { GET_ME } from "../utils/queries";
 
 const SavedBooks = () => {
-  // const [userData, setUserData] = useState({});
   const [removeBook, { error }] = useMutation(REMOVE_BOOK);
-  const { loading, data } = useQuery(GET_ME);
-  let userData = data?.me || {};
-  console.log(data, "Hello book")
+  const {loading, data} = useQuery(GET_ME);
+  const userData = data?.me || {};
 
-  // create function that accepts the book's mongo _id value as param and deletes the book from the database
-  const handleDeleteBook = async (bookId) => {
-    const token = Auth.loggedIn() ? Auth.getToken() : null;
 
-    if (!token) {
-      return false;
+const handleDeleteBook = async (bookId) => {
+  const token = Auth.loggedIn() ? Auth.getToken() : null;
+
+  if(!token) {
+    return false;
+  }
+  try {
+    const { data } = await removeBook({
+      variables: {bookId},
+    });
+    console.log(data);
+
+    if (error) {
+      throw new Error("Something is not quite right!");
     }
-
-    try {
-      const { data } = await removeBook({
-        variables: { bookId },
-      });
-
-      console.log(data);
-
-      if (error) {
-        throw new Error("Something went wrong!");
-      }
-
-      // upon success, remove book's id from localStorage
-      removeBookId(bookId);
-    } catch (err) {
-      console.error(err);
-      
-    }
-  };
+    removeBookId(bookId);
+  } catch(err) {
+    console.log(err);
+  }
+}
 
   // if data isn't here yet, say so
   if (loading) {
